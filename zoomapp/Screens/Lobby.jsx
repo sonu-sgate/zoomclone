@@ -1,9 +1,10 @@
-import React, { useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { createTheme } from "@mui/material/styles";
 import { blue, green, purple, teal } from "@mui/material/colors";
 import { ThemeProvider } from '@emotion/react';
-import { Box, Button, Input, TextField, Typography } from '@mui/material';
-
+import { Box, Button, Input, InputLabel, TextField, Typography } from '@mui/material';
+import { usesocket } from '../src/Context/Context';
+import { useNavigate } from 'react-router-dom';
 const theme = createTheme({
   palette: {
     primary: {
@@ -21,17 +22,31 @@ const initialdata={
 export default function () {
     const [zoominitialdata,setZoominitialdata]=useState(initialdata)
     const {email,room}=zoominitialdata
+    const socket=usesocket()
 const handlechange=(e)=>{
     const {name,value}=e.target 
-    console.log(e.target.value)
+    // console.log(e.target.value)
     setZoominitialdata((pre)=>({...pre,[name]:value}))
 }
 
-const handlesubmit=(e)=>{
+const handlesubmit=useCallback((e)=>{
     e.preventDefault()
-    console.log(zoominitialdata)
+socket.emit("room:joined",{email,room})
+},[email,room,socket])
+const navigate=useNavigate()
+const handleroom=(data)=>{
+  const {room}=data
+ 
+ navigate(`/room/${room}`)
 }
-
+useEffect(()=>{
+socket.on("room:joined",(data)=>{
+  handleroom(data)
+})
+return ()=>{
+    socket.off("room:joined")
+}
+},[socket])
 
   return (
     <ThemeProvider theme={theme}>
@@ -50,40 +65,37 @@ const handlesubmit=(e)=>{
         >
           LOBBY
         </Typography>
+
         <Box display={"flex"} justifyContent={"center"} alignItems={"center"}>
           <form onSubmit={handlesubmit}>
-            {/* <Input
-              onChange={handlechange}
-              name={"email"}
-              value={email}
-              sx={{
-                display: "block",
-              }}
-            /> */}
-            {/* <Input onChange={handlechange} name={"room"} value={room} /> */}
-
+         
             <TextField
               required
-              id="outlined-required"
-              label="Required"
-          
+              label="email"
+              name="email"
               onChange={handlechange}
-              value={email}
               type="text"
+              sx={{ display: "block", margin: "10px" }}
             />
             <TextField
+              name="room"
+              label="Room"
               required
-              id="outlined-required"
-              label="Required"
-   
-          onChange={handlechange}
-              value={room}
+              onChange={handlechange}
               type="number"
+              sx={{ margin: "10px", display: "block" }}
             />
 
-            <Button variant="contained" sx={{ backgroundColor: "white" }}>
-              JOIN+
-            </Button>
+            <Box display={"flex"} justifyContent={"center"} alignItems={"center"}>
+              {" "}
+              <Button
+                type="submit"
+                variant="contained"
+                sx={{ backgroundColor: "white", margin: "10px" }}
+              >
+                JOIN+
+              </Button>
+            </Box>
           </form>
         </Box>
       </Box>
