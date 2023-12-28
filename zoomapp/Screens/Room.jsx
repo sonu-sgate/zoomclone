@@ -1,6 +1,6 @@
 import React,{useEffect, useState} from 'react'
 import { useParams } from 'react-router-dom'
-import SimplePeer from "simple-peer";
+import { useRef } from 'react'
 import { usesocket } from '../src/Context/Context'
 import { Box, Button } from '@mui/material'
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
@@ -32,9 +32,21 @@ return () => {
 
   // handling calling system
 
-  const handleCalluser=()=>{
-    const stream=navigator.mediaDevices.getUserMedia({audio:true,video:true})
-  }
+  const videoRef = useRef(null);
+
+  const startVideoStream = async () => {
+    try {
+    const stream = await navigator.mediaDevices.getUserMedia({video:true, audio: true });
+
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        
+      }
+    } catch (error) {
+      console.error("Error accessing user media:", error);
+    }
+  };
+
   return (
     <>
       <Box display={"flex"} justifyContent={"center"} alignItems={"center"}>
@@ -49,7 +61,7 @@ return () => {
       {remoteId && (
         <Box display={"flex"} justifyContent={"center"} alignItems={"center"}>
           {remoteId && (
-            <Button sx={{ display: "block" }} variant="contained" onClick={handleCalluser}>
+            <Button sx={{ display: "block" }} variant="contained" onClick={startVideoStream}>
               Call
             </Button>
           )}
