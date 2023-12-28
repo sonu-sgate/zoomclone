@@ -29,7 +29,12 @@ io.on("connection", (socket) => {
     const {email,room}=data
     emailtoSocketIdmap.set(email,socket.id)
     socketidtoemailmap.set(socket.id,email)
+
+    // io will emimt an event (userjoined) with provided data to whole room members except who is joining
+    io.to(room).emit('userjoined',{email,id:socket.id})
     // console.log(data)
+    // console.log(room,"room")
+    socket.join(room)
     // console.log(socket.id,"socket.id")
     io.to(socket.id).emit("room:joined",data)
   })
